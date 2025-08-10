@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.MileageEntry
+import com.example.myapplication.data.MileageEntry
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -140,7 +140,7 @@ fun MileageLineChart(
             }
 
         // Draw labels for some key dates
-      val labelIndices = mutableListOf<Int>()
+        val labelIndices = mutableListOf<Int>()
         if (sortedEntries.isNotEmpty()) labelIndices.add(0) // First entry
         if (sortedEntries.size > 2) labelIndices.add(sortedEntries.size / 2) // Middle entry
         if (sortedEntries.size > 1) labelIndices.add(sortedEntries.size - 1) // Last entry

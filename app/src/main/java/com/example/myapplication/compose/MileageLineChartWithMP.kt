@@ -1,9 +1,11 @@
-package com.example.myapplication // Your package name
+package com.example.myapplication.compose // Your package name
 
+import android.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.myapplication.data.MileageEntry
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
@@ -89,10 +91,10 @@ fun MileageLineChartWithMP(entries: List<MileageEntry>, modifier: Modifier = Mod
         // This block is called when 'entries' (and thus 'chartEntries') changes
         val lineDataSet =
             LineDataSet(chartEntries, "Mileage").apply {
-              color = android.graphics.Color.BLUE // Use android.graphics.Color
-              valueTextColor = android.graphics.Color.BLACK
+              color = Color.BLUE // Use android.graphics.Color
+              valueTextColor = Color.BLACK
               setDrawCircles(true)
-              setCircleColor(android.graphics.Color.BLUE)
+              setCircleColor(Color.BLUE)
               circleRadius = 4f
               setDrawValues(false) // Don't draw mileage value on top of each point
             }
