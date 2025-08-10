@@ -51,6 +51,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.myapplication.compose.AddMileageEntryDialog
 import com.example.myapplication.compose.MileageLineChartWithMP
 import com.example.myapplication.data.MileageEntry
 import com.example.myapplication.imageParser.ImageParser
@@ -72,6 +73,10 @@ class MainActivity : ComponentActivity() {
         // State to hold the selected image URI
         val context = LocalContext.current
 
+        // State for dialog visibility
+        var showMileageDialog by remember { mutableStateOf(false) }
+        // State to hold the extracted mileage entry data for the dialog
+        var extractedEntryForDialog by remember { mutableStateOf<MileageEntry?>(null) }
         // ActivityResultLauncher for picking a single image
         val singlePhotoPickerLauncher =
             rememberLauncherForActivityResult(
@@ -80,11 +85,10 @@ class MainActivity : ComponentActivity() {
                   uri?.let {
                     ImageParser(uri, context).apply {
                       initBitmap()
-                      processImageForMileage(
+                      processImageForMileageEntry(
                           onSuccess = {
-                            Toast.makeText(
-                                    this@MainActivity, "Extracted miles: $it", Toast.LENGTH_LONG)
-                                .show()
+                            extractedEntryForDialog = it
+                            showMileageDialog = true // Show the dialog
                           },
                           onError = {
                             Toast.makeText(this@MainActivity, "Error $it", Toast.LENGTH_LONG).show()
@@ -92,6 +96,19 @@ class MainActivity : ComponentActivity() {
                     }
                   }
                 })
+
+        if (showMileageDialog) {
+          extractedEntryForDialog?.also {
+            AddMileageEntryDialog(
+                entry = it,
+                onConfirm = {
+                  viewModel.addMileageEntry(it)
+                  showMileageDialog = false
+                },
+                onDismiss = { showMileageDialog = false })
+          }
+        }
+
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             floatingActionButton = {
@@ -349,11 +366,3 @@ private fun addMileageEntry(
     onError("Invalid input format")
   }
 }
-// Chart Formatter
-// class DateValueFormatter : ValueFormatter() {
-//    private val dateFormat = SimpleDateFormat("MM/dd", Locale.getDefault())
-//
-//    override fun getFormattedValue(value: Float): String {
-//        return dateFormat.format(Date(value.toLong()))
-//    }
-// }

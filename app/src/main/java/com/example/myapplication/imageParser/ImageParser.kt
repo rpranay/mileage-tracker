@@ -6,9 +6,15 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.exifinterface.media.ExifInterface
+import com.example.myapplication.data.MileageEntry
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class ImageParser(val imageUri: Uri, val context: Context) {
   lateinit var bitmap: Bitmap
@@ -24,7 +30,7 @@ class ImageParser(val imageUri: Uri, val context: Context) {
             .copy(Bitmap.Config.ARGB_8888, true)
   }
 
-  fun processImageForMileage(onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+  fun processImageForMileageEntry(onSuccess: (MileageEntry) -> Unit, onError: (String) -> Unit) {
     val image: InputImage
     try {
       image = InputImage.fromFilePath(context, imageUri) // Or fromBitmap(bitmap)
@@ -49,9 +55,57 @@ class ImageParser(val imageUri: Uri, val context: Context) {
     }
   }
 
-  fun parseMileageFromOcrText(
+  private fun getPhotoDateTaken(): Date {
+    try {
+      context.contentResolver.openInputStream(imageUri)?.use { inputStream ->
+        val exifInterface = ExifInterface(inputStream)
+
+        // Primary EXIF tag for original date/time
+        val dateTimeOriginal = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL)
+        // EXIF date format is typically "yyyy:MM:dd HH:mm:ss"
+        // We need to parse this and then reformat it.
+        val commonParser = SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.getDefault())
+        parseDate(dateTimeOriginal, commonParser)?.also {
+          return it
+        }
+
+        // Fallback to TAG_DATETIME (last modification date/time) if original is not available
+        val dateTime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME)
+        parseDate(dateTime, commonParser)?.also {
+          return it
+        }
+
+        // You can also check TAG_GPS_DATESTAMP if location data is important
+        // and often includes a date. Format is usually "yyyy:MM:dd".
+        val gpsDateStamp = exifInterface.getAttribute(ExifInterface.TAG_GPS_DATESTAMP)
+        val gpsDateStampParser = SimpleDateFormat("yyyy:MM:dd", Locale.getDefault())
+        parseDate(gpsDateStamp, gpsDateStampParser)?.also {
+          return it
+        }
+      }
+    } catch (e: IOException) {
+      println("Error reading EXIF data: ${e.message}")
+      // Handle error (e.g., file not found, not an image)
+    }
+    return Date() // Creates a new Date object with the current time
+  }
+
+  private fun parseDate(dateTime: String?, parser: SimpleDateFormat): Date? {
+    dateTime?.also {
+      try {
+        val date = parser.parse(dateTime)
+        return date
+      } catch (e: Exception) {
+        // Log error or try next tag
+        println("Error parsing TAG_DATETIME_ORIGINAL: $dateTime - ${e.message}")
+      }
+    }
+    return null
+  }
+
+  private fun parseMileageFromOcrText(
       ocrText: String,
-      onSuccess: (String) -> Unit,
+      onSuccess: (MileageEntry) -> Unit,
       onError: (String) -> Unit
   ) {
     // 1. Look for sequences of digits (potentially with commas)
@@ -88,7 +142,7 @@ class ImageParser(val imageUri: Uri, val context: Context) {
       // - For now, let's assume the largest valid number is the mileage.
       val bestGuessMileage = potentialMileages.maxOrNull()
       if (bestGuessMileage != null) {
-        onSuccess(bestGuessMileage.toString())
+        onSuccess(MileageEntry(miles = bestGuessMileage, date = getPhotoDateTaken()))
       } else {
         onError("Could not confidently extract mileage.")
       }
