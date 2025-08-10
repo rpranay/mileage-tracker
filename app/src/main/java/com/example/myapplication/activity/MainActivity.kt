@@ -1,7 +1,7 @@
 package com.example.myapplication.activity
 
-import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myapplication.compose.MileageLineChartWithMP
 import com.example.myapplication.data.MileageEntry
+import com.example.myapplication.imageParser.ImageParser
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.viewmodel.MileageListViewModel
 import java.text.SimpleDateFormat
@@ -69,18 +70,27 @@ class MainActivity : ComponentActivity() {
       MyApplicationTheme {
 
         // State to hold the selected image URI
-        var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+        val context = LocalContext.current
 
         // ActivityResultLauncher for picking a single image
         val singlePhotoPickerLauncher =
             rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.PickVisualMedia(),
                 onResult = { uri ->
-                  selectedImageUri = uri
-                  // You can now use the 'uri' to:
-                  // 1. Display the image (see example below)
-                  // 2. Upload it
-                  // 3. Save its path to your MileageEntry, etc.
+                  uri?.let {
+                    ImageParser(uri, context).apply {
+                      initBitmap()
+                      processImageForMileage(
+                          onSuccess = {
+                            Toast.makeText(
+                                    this@MainActivity, "Extracted miles: $it", Toast.LENGTH_LONG)
+                                .show()
+                          },
+                          onError = {
+                            Toast.makeText(this@MainActivity, "Error $it", Toast.LENGTH_LONG).show()
+                          })
+                    }
+                  }
                 })
         Scaffold(
             modifier = Modifier.fillMaxSize(),
