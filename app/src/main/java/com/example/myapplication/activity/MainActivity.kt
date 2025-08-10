@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.activity
 
 import android.net.Uri
 import android.os.Bundle
@@ -44,13 +44,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.myapplication.compose.MileageLineChartWithMP
+import com.example.myapplication.data.MileageEntry
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import com.example.myapplication.viewmodel.MileageListViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -292,10 +296,7 @@ fun MileageChart(entries: List<MileageEntry>, modifier: Modifier = Modifier) {
     }
 
     // Draw line
-    drawPath(
-        path = path,
-        color = primaryColor,
-        style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3f))
+    drawPath(path = path, color = primaryColor, style = Stroke(width = 3f))
   }
 }
 

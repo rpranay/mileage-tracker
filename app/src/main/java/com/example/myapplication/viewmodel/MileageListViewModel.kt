@@ -1,9 +1,10 @@
-package com.example.myapplication
+package com.example.myapplication.viewmodel
 
 import AppDatabase
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.MileageEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,7 @@ class MileageListViewModel(private val context: Context) : ViewModel() {
           .getAllEntries()
           .stateIn(
               scope = viewModelScope,
-              started = SharingStarted.WhileSubscribed(5000L),
+              started = SharingStarted.Companion.WhileSubscribed(5000L),
               initialValue = emptyList())
 
   fun addMileageEntry(entry: MileageEntry) {

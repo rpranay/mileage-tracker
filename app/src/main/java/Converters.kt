@@ -4,7 +4,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.example.myapplication.MileageEntry
+import com.example.myapplication.data.MileageEntry
 import java.util.Date
 
 // You'll need a TypeConverter for the Date type

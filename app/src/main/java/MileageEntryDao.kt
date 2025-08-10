@@ -3,7 +3,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.myapplication.MileageEntry
+import com.example.myapplication.data.MileageEntry
 import kotlinx.coroutines.flow.Flow // For reactive updates
 
 @Dao
